@@ -58,6 +58,11 @@ def update_playlist():
                             group_tag = "Spanish"
                         elif country_code == 'CH':
                             group_tag = "Swiss"
+                        elif country_code == 'UK':
+                            group_tag = "English"
+                        elif country_code == 'US':
+                            group_tag = "English"
+                            
                         else:
                             group_tag = country_code # Usa il codice se non è mappato sopra
 
