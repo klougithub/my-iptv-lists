@@ -1,37 +1,11 @@
 import requests
 import re
 import os
-import json
-
-def get_country_name(code):
-    """Mappa i codici nazione ISO a nomi di gruppo puliti."""
-    if code == 'IT': return "Italian"
-    if code == 'FR': return "French"
-    if code == 'DE': return "German"
-    if code == 'ES': return "Spanish"
-    if code == 'CH': return "Swiss"
-    return code # Ritorna il codice se non è mappato sopra
 
 def update_playlist():
     original_url = "https://iptv-ch.github.io/netplus.mpd"
-    channel_map_url_external = "https://iptv-org.github.io/api/channels.json"
     output_filename = "netplus_modified.mpd"
-    
-    external_map_data = {}
-    
-    # --- 1. Scarica la mappa esterna IPTV-Org (Priorità 1) ---
-    try:
-        response = requests.get(channel_map_url_external)
-        response.raise_for_status()
-        channels_data = response.json()
-        for channel in channels_data:
-            if 'id' in channel and 'country' in channel:
-                 external_map_data[channel['id']] = channel['country']
-        print(f"Mappa canali esterni caricata con {len(external_map_data)} entries.")
-    except requests.exceptions.RequestException:
-        print("Errore durante il download della mappa canali esterna. Proseguo senza di essa.")
 
-    # --- 2. Elabora la playlist ---
     try:
         response = requests.get(original_url)
         response.raise_for_status()
@@ -42,40 +16,75 @@ def update_playlist():
 
         for line in lines:
             if line.startswith('#EXTINF'):
-                group_tag = "Others" # Default finale
                 tvg_id_match = re.search(r'tvg-id="([^"]+)"', line)
-                channel_name = line.split(',')[-1].strip().lower()
-                
-                tvg_id_value = tvg_id_match.group(1) if tvg_id_match else None
+                group_tag = "Others" # Default a 'Others' se non troviamo corrispondenze
 
-                # A. Priorità 1: Usa il database esterno (se l'ID è presente)
-                if tvg_id_value and tvg_id_value in external_map_data:
-                    country_code = external_map_data[tvg_id_value]
-                    group_tag = get_country_name(country_code)
-                
-                # B. Priorità 2: Analisi del tvg-id per estensione (se A fallisce)
-                if group_tag == "Others" and tvg_id_value:
-                    if tvg_id_value.endswith('.it'): group_tag = "Italian"
-                    elif tvg_id_value.endswith('.fr'): group_tag = "French"
-                    elif tvg_id_value.endswith('.de'): group_tag = "German"
-                    elif tvg_id_value.endswith('.ch'): group_tag = "Swiss"
+                if tvg_id_match:
+                    tvg_id_value = tvg_id_match.group(1).lower()
+                    
+                    if '.it' in tvg_id_value:
+                        group_tag = "Italian"
+                    elif '.fr' in tvg_id_value:
+                        group_tag = "French"
+                    elif '.de' in tvg_id_value:
+                        group_tag = "German"
+                    elif '.ch' in tvg_id_value:
+                        group_tag = "Swiss"
+                    # Inizio nuove estensioni aggiunte:
+                    elif '.uk' in tvg_id_value:
+                        group_tag = "UK"
+                    elif '.at' in tvg_id_value:
+                        group_tag = "Austrian"
+                    elif '.be' in tvg_id_value:
+                        group_tag = "Belgian"
+                    elif '.es' in tvg_id_value:
+                        group_tag = "Spanish"
+                    elif '.pt' in tvg_id_value:
+                        group_tag = "Portuguese"
+                    elif '.br' in tvg_id_value:
+                        group_tag = "Brazilian"
+                    elif '.nl' in tvg_id_value:
+                        group_tag = "Dutch"
+                    elif '.pl' in tvg_id_value:
+                        group_tag = "Polish"
+                    elif '.hu' in tvg_id_value:
+                        group_tag = "Hungarian"
+                    elif '.rs' in tvg_id_value:
+                        group_tag = "Serbian"
+                    elif '.ng' in tvg_id_value:
+                        group_tag = "Nigerian"
+                    elif '.jp' in tvg_id_value:
+                        group_tag = "Japanese"
+                    elif '.tr' in tvg_id_value:
+                        group_tag = "Turkish"
+                    elif '.ma' in tvg_id_value:
+                        group_tag = "Moroccan"
+                    elif '.eg' in tvg_id_value:
+                        group_tag = "Egyptian"
+                    elif '.cn' in tvg_id_value:
+                        group_tag = "Chinese"
+                    elif '.xk' in tvg_id_value:
+                        group_tag = "Kosovan"
+                    elif '.me' in tvg_id_value:
+                        group_tag = "Montenegrin"
+                    # Estensioni generiche/internazionali
+                    elif '.com' in tvg_id_value or '.net' in tvg_id_value or '.tv' in tvg_id_value:
+                        group_tag = "International"
+                    # Fine nuove estensioni
 
-                # C. Priorità 3: Analisi del nome del canale (se B fallisce)
-                if group_tag == "Others" and channel_name:
-                    if 'rai' in channel_name or 'italia' in channel_name or 'italy' in channel_name or 'mediaset' in channel_name: group_tag = "Italian"
-                    elif 'france' in channel_name or 'f2' in channel_name or 'm6' in channel_name: group_tag = "French"
-                    elif 'german' in channel_name or 'zdf' in channel_name or 'ard' in channel_name: group_tag = "German"
-                    elif 'rts' in channel_name or 'srf' in channel_name or 'rsi' in channel_name or 'svizzera' in channel_name: group_tag = "Swiss"
-
-                # D. Applica il group-title alla riga
+                # Aggiungi o aggiorna l'attributo group-title
                 if re.search(r'group-title="[^"]+"', line):
+                    # Se esiste già, sostituisci il valore
                     line = re.sub(r'group-title="[^"]+"', f'group-title="{group_tag}"', line)
                 else:
+                    # Se non esiste, aggiungilo alla fine della riga EXTINF, prima del nome del canale
                     last_comma_index = line.rfind(',')
                     if last_comma_index != -1:
                         line = line[:last_comma_index] + f' group-title="{group_tag}"' + line[last_comma_index:]
+                    # Se non c'è virgola (caso strano), lo aggiungiamo in coda
                     else:
                         line = line.strip() + f' group-title="{group_tag}"'
+
 
                 modified_lines.append(line)
             else:
@@ -84,7 +93,7 @@ def update_playlist():
         with open(output_filename, 'w', encoding='utf-8') as f:
             f.write('\n'.join(modified_lines))
 
-        print(f"Playlist modificata salvata in {output_filename}.")
+        print(f"Playlist modificata salvata in {output_filename} usando i tag tvg-id.")
 
     except requests.exceptions.RequestException as e:
         print(f"Errore durante il download della playlist: {e}")
