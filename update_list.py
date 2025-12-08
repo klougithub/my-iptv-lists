@@ -16,9 +16,8 @@ def update_playlist():
 
         for line in lines:
             if line.startswith('#EXTINF'):
-                # Usa una RegEx per trovare il valore di tvg-id="VALUE"
                 tvg_id_match = re.search(r'tvg-id="([^"]+)"', line)
-                group_tag = "UNKNOWN"
+                group_tag = "N/A" # Default a N/A se non troviamo tvg-id
 
                 if tvg_id_match:
                     tvg_id_value = tvg_id_match.group(1).lower()
@@ -31,15 +30,22 @@ def update_playlist():
                         group_tag = "GERMANY"
                     elif '.ch' in tvg_id_value:
                         group_tag = "SWITZERLAND"
-                    # Puoi aggiungere altri paesi qui se necessario (.co.uk, .us, etc.)
+                    # Aggiungi altri paesi qui se necessario
 
                 # Aggiungi o aggiorna l'attributo group-title
-                # Usiamo re.sub per sostituire group-title se esiste già, altrimenti lo aggiungiamo
                 if re.search(r'group-title="[^"]+"', line):
+                    # Se esiste già, sostituisci il valore
                     line = re.sub(r'group-title="[^"]+"', f'group-title="{group_tag}"', line)
                 else:
-                    # Aggiungi il group-title subito dopo tvg-id per mantenere l'ordine
-                    line = line.replace(tvg_id_match.group(0), f'{tvg_id_match.group(0)} group-title="{group_tag}"')
+                    # Se non esiste, aggiungilo alla fine della riga EXTINF, prima del nome del canale
+                    # Troviamo la posizione dell'ultima virgola per inserire il tag prima del nome del canale
+                    last_comma_index = line.rfind(',')
+                    if last_comma_index != -1:
+                        line = line[:last_comma_index] + f' group-title="{group_tag}"' + line[last_comma_index:]
+                    # Se non c'è virgola (caso strano), lo aggiungiamo in coda
+                    else:
+                        line = line.strip() + f' group-title="{group_tag}"'
+
 
                 modified_lines.append(line)
             else:
