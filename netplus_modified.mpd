@@ -326,8 +326,10 @@ https://viamotionhsi.netplus.ch/live/eds/rbb/browser-dash/rbb.mpd
 https://viamotionhsi.netplus.ch/live/eds/tvpolonia/browser-dash/tvpolonia.mpd
 #EXTINF:-1 tvg-id="vox.de" tvg-logo="https://picserve.netplus.ch/channels/vox.png" group-title="German",VOX
 https://viamotionhsi.netplus.ch/live/eds/vox/browser-dash/vox.mpd
-#EXTINF:-1 tvg-id="atv.at" tvg-logo="https://picserve.netplus.ch/channels/atv.png" group-title="Austrian",atv
+#EXTINF:-1 tvg-id="atv.at" tvg-logo="https://picserve.netplus.ch/channels/atv.png" group-title="Austrian",atv2
 https://viamotionhsi.netplus.ch/live/eds/atv/browser-dash/atv.mpd
+#EXTINF:-1 tvg-id="onehd.de" tvg-logo="https://picserve.netplus.ch/channels/onehd.png" group-title="German",ARD one HD
+https://viamotionhsi.netplus.ch/live/eds/onehd/browser-dash/onehd.mpd
 #EXTINF:-1 tvg-id="duna.hu" tvg-logo="https://picserve.netplus.ch/channels/duna.png" group-title="Hungarian",DUNA HD
 https://viamotionhsi.netplus.ch/live/eds/duna/browser-dash/duna.mpd
 #EXTINF:-1 tvg-id="eurod.tr" tvg-logo="https://picserve.netplus.ch/channels/eurod.png" group-title="Turkish",EUROD
@@ -364,3 +366,5 @@ https://viamotionhsi.netplus.ch/live/eds/rtssat/browser-dash/rtssat.mpd
 #EXTREM https://viamotionhsi.netplus.ch/live/eds/canalbf/browser-dash/canalbf.mpd
 #EXTINF:-1 tvg-id="telebaern.tv" tvg-logo="https://picserve.netplus.ch/channels/telebearn.png" group-title="International",TeleBärn
 https://viamotionhsi.netplus.ch/live/eds/telebaern/browser-dash/telebaern.mpd
+#EXTINF:-1 tvg-id="bnt4.bg" tvg-logo="https://picserve.netplus.ch/channels/bntworld.png" group-title="Others",BNT4 HD
+https://viamotionhsi.netplus.ch/live/eds/bntworld/browser-dash/bntworld.mpd
